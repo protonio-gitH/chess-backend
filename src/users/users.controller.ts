@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { UsersService } from './users.service';
 
-@Injectable()
+@Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  // Define controller methods here
 }
