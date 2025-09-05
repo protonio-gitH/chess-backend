@@ -7,8 +7,8 @@ import { User } from '@prisma/client';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('registration')
-  public async createUser(@Body() dto: CreateUserDto): Promise<User> {
+  @Post()
+  public async create(@Body() dto: CreateUserDto): Promise<User> {
     return await this.usersService.createUser(dto);
   }
 
