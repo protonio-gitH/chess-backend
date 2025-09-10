@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataBaseService } from '../database/database.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { User, Prisma } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { RolesService } from 'src/roles/roles.service';
 import { UserRepository, UserWithRoles } from 'src/types/prisma';
+import { AddRoleDto } from './dto/add-role-dto';
+import { BanDto } from './dto/ban-dto';
 
 @Injectable()
 export class UsersService {
@@ -51,5 +53,46 @@ export class UsersService {
       include: { roles: true },
     });
     return user;
+  }
+
+  public async addRole(dto: AddRoleDto): Promise<AddRoleDto> {
+    const user = await this.userRepository.findUnique({
+      where: { id: +dto.userId },
+      include: { roles: true },
+    });
+    const role = await this.roleServive.getRoleByValue(dto.value);
+    if (role && user) {
+      await this.userRepository.update({
+        where: { id: user.id },
+        data: {
+          roles: {
+            connect: { id: role.id },
+          },
+        },
+      });
+      return dto;
+    }
+    throw new HttpException(
+      'Пользователь или роль не найдены',
+      HttpStatus.NOT_FOUND,
+    );
+  }
+
+  public async ban(dto: BanDto): Promise<BanDto> {
+    const user = await this.userRepository.findUnique({
+      where: { id: +dto.userId },
+      include: { roles: true },
+    });
+    if (user) {
+      await this.userRepository.update({
+        where: { id: user.id },
+        data: {
+          banned: true,
+          banReason: dto.banReason,
+        },
+      });
+      return dto;
+    }
+    throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
   }
 }

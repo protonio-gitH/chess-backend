@@ -6,6 +6,8 @@ import { UserWithRoles } from 'src/types/prisma';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles-auth.decorator';
+import { AddRoleDto } from './dto/add-role-dto';
+import { BanDto } from './dto/ban-dto';
 
 @Controller('users')
 export class UsersController {
@@ -17,9 +19,23 @@ export class UsersController {
   }
 
   @Roles('ADMIN')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Get()
   public async getUsers(): Promise<UserWithRoles[]> {
     return await this.usersService.getUsers();
+  }
+
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Post('/role')
+  public async addRole(@Body() dto: AddRoleDto): Promise<AddRoleDto> {
+    return await this.usersService.addRole(dto);
+  }
+
+  //   @Roles('ADMIN')
+  //   @UseGuards(RolesGuard)
+  @Post('/ban')
+  public async ban(@Body() dto: BanDto) {
+    return await this.usersService.ban(dto);
   }
 }

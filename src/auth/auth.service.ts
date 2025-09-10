@@ -16,11 +16,13 @@ export class AuthService {
     private userService: UsersService,
     private jwtService: JwtService,
   ) {}
-  public async login(userDto: CreateUserDto) {
+  public async login(userDto: CreateUserDto): Promise<{ token: string }> {
     const user = await this.validateUser(userDto);
     return this.generateToken(user);
   }
-  public async registration(userDto: CreateUserDto) {
+  public async registration(
+    userDto: CreateUserDto,
+  ): Promise<{ token: string }> {
     const candidate = await this.userService.getUserByEmail(userDto.email);
     if (candidate) {
       throw new HttpException(
@@ -32,14 +34,14 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private async generateToken(user: UserWithRoles) {
+  private generateToken(user: UserWithRoles): { token: string } {
     const payload = { email: user.email, id: user.id, roles: user.roles };
     return {
       token: this.jwtService.sign(payload),
     };
   }
 
-  private async validateUser(userDto: CreateUserDto) {
+  private async validateUser(userDto: CreateUserDto): Promise<UserWithRoles> {
     const user = await this.userService.getUserByEmail(userDto.email);
     const passwordEquals = await compare(
       userDto.password,
