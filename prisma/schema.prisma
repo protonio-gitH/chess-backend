@@ -4,9 +4,21 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+enum GameStatus {
+  waiting
+  in_progress
+  finished
+  abandoned
+}
+
+enum GameTurns {
+  white
+  black
+}
+
 generator client {
   provider = "prisma-client-js"
-//   output   = "../generated/prisma"
+  //   output   = "../generated/prisma"
 }
 
 datasource db {
@@ -17,19 +29,46 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password	String
+  password  String
   banned    Boolean  @default(false)
   banReason String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   roles     Role[]   @relation("UserRoles")
+  players   Player[]
+  games     Game[]
 }
 
 model Role {
-  id        Int      @id @default(autoincrement())
-  value     String   @unique
+  id          Int      @id @default(autoincrement())
+  value       String   @unique
   description String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]   @relation("UserRoles")
+}
+
+model Player {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  color     String
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    Int
+  gameWon   Game?    @relation("WinnerRelation")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users     User[]   @relation("UserRoles")
+}
+
+model Game {
+  id        Int        @id @default(autoincrement())
+  status    GameStatus @default(waiting)
+  turn      GameTurns  @default(white)
+  players   Player[]
+  winner    Player?    @relation("WinnerRelation", fields: [winnerId], references: [id])
+  winnerId  Int?       @unique
+  creator   User       @relation(fields: [creatorId], references: [id])
+  creatorId Int
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }

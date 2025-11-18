@@ -13,7 +13,7 @@ export class RolesController {
   }
 
   @Get('/:value')
-  public getByValue(@Param('value') value: string) {
+  public getByValue(@Param('value') value: string): Promise<Role | null> {
     return this.rolesSerivce.getRoleByValue(value);
   }
 }

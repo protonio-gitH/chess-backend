@@ -4,6 +4,7 @@ import { DataBaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
     DataBaseModule,
     RolesModule,
     AuthModule,
+    GameModule,
   ],
   //   controllers: [AppController],
   //   providers: [AppService],

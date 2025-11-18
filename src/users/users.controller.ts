@@ -32,8 +32,8 @@ export class UsersController {
     return await this.usersService.addRole(dto);
   }
 
-  //   @Roles('ADMIN')
-  //   @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
   @Post('/ban')
   public async ban(@Body() dto: BanDto) {
     return await this.usersService.ban(dto);
