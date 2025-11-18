@@ -57,7 +57,7 @@ export class UsersService {
 
   public async addRole(dto: AddRoleDto): Promise<AddRoleDto> {
     const user = await this.userRepository.findUnique({
-      where: { id: +dto.userId },
+      where: { id: dto.userId },
       include: { roles: true },
     });
     const role = await this.roleServive.getRoleByValue(dto.value);
@@ -80,7 +80,7 @@ export class UsersService {
 
   public async ban(dto: BanDto): Promise<BanDto> {
     const user = await this.userRepository.findUnique({
-      where: { id: +dto.userId },
+      where: { id: dto.userId },
       include: { roles: true },
     });
     if (user) {

@@ -1,6 +1,6 @@
-import { IsNumber } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateGameDto {
-  @IsNumber()
-  readonly creatorId: number;
+  @IsString()
+  readonly creatorId: string;
 }
