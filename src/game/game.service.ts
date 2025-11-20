@@ -20,7 +20,7 @@ export class GameService {
     });
 
     const inProgressGame = await this.gameRepository.findFirst({
-      where: { players: { some: { userId: user.id } }, status: 'in_progress' },
+      where: { players: { some: { id: user.id } }, status: 'in_progress' },
     });
 
     if (inProgressGame) {
@@ -39,14 +39,10 @@ export class GameService {
         data: {
           creatorId: user.id,
           status: 'waiting',
-        },
-      });
-
-      await tx.player.create({
-        data: {
-          userId: user.id,
-          gameId: newGame.id,
-          color: 'white',
+          whitePlayerId: user.id,
+          players: {
+            connect: { id: user.id },
+          },
         },
       });
 
@@ -60,7 +56,7 @@ export class GameService {
       where: {
         players: {
           some: {
-            userId: dto.userId,
+            id: dto.userId,
           },
         },
         status: {
@@ -76,14 +72,10 @@ export class GameService {
         where: { id: dto.gameId, status: 'waiting' },
         data: {
           status: 'in_progress',
-        },
-      });
-
-      await tx.player.create({
-        data: {
-          userId: dto.userId,
-          gameId: dto.gameId,
-          color: 'black',
+          blackPlayerId: dto.userId,
+          players: {
+            connect: { id: dto.userId },
+          },
         },
       });
 

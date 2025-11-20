@@ -27,16 +27,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  banned    Boolean  @default(false)
-  banReason String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roles     Role[]   @relation("UserRoles")
-  players   Player[]
-  games     Game[]
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  banned       Boolean  @default(false)
+  banReason    String?
+  roles        Role[]   @relation("UserRoles")
+  games        Game[]
+  gamesWon     Game[]   @relation("WinnerRelation")
+  createdGames Game[]   @relation("CreatorRelation")
+  whiteGames   Game[]   @relation("WhitePlayer")
+  blackGames   Game[]   @relation("BlackPlayer")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Role {
@@ -48,27 +51,31 @@ model Role {
   users       User[]   @relation("UserRoles")
 }
 
-model Player {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  color     String
-  game      Game     @relation(fields: [gameId], references: [id])
-  gameId    String
-  gameWon   Game?    @relation("WinnerRelation")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+// model Player {
+//   id        String   @id @default(cuid())
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    String
+//   color     String
+//   game      Game     @relation(fields: [gameId], references: [id])
+//   gameId    String
+//   gameWon   Game?    @relation("WinnerRelation")
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
 
 model Game {
-  id        String     @id @default(cuid())
-  status    GameStatus @default(waiting)
-  turn      GameTurns  @default(white)
-  players   Player[]
-  winner    Player?    @relation("WinnerRelation", fields: [winnerId], references: [id])
-  winnerId  String?    @unique
-  creator   User       @relation(fields: [creatorId], references: [id])
-  creatorId String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  status        GameStatus @default(waiting)
+  turn          GameTurns  @default(white)
+  players       User[]
+  winner        User?      @relation("WinnerRelation", fields: [winnerId], references: [id])
+  winnerId      String?    @unique
+  creator       User       @relation("CreatorRelation", fields: [creatorId], references: [id])
+  creatorId     String
+  whitePlayer   User?       @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+  whitePlayerId String?
+  blackPlayer   User  ?     @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+  blackPlayerId String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
