@@ -17,7 +17,7 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/accept')
-  public async accept(@Body() dto: AcceptGameDto) {
+  public async accept(@Body() dto: AcceptGameDto): Promise<Game> {
     return this.gameService.acceptGame(dto);
   }
 }

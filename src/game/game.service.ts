@@ -5,12 +5,16 @@ import { CreateGameDto } from './dto/create-game-dto';
 import { Game, Prisma } from '@prisma/client';
 import { AcceptGameDto } from './dto/accept-game-dto';
 import { ConflictException } from '@nestjs/common';
+import { EventsService } from 'src/events/events.service';
 
 @Injectable()
 export class GameService {
   private readonly gameRepository: GameRepository;
 
-  constructor(private readonly db: DataBaseService) {
+  constructor(
+    private readonly db: DataBaseService,
+    private readonly eventsService: EventsService,
+  ) {
     this.gameRepository = this.db.game;
   }
 
@@ -51,7 +55,7 @@ export class GameService {
     return game;
   }
 
-  public async acceptGame(dto: AcceptGameDto) {
+  public async acceptGame(dto: AcceptGameDto): Promise<Game> {
     const inProgressGame = await this.gameRepository.findFirst({
       where: {
         players: {
@@ -83,5 +87,12 @@ export class GameService {
     });
 
     return updateGame;
+  }
+
+  private async updateGamesList(): Promise<void> {
+    const games = await this.gameRepository.findMany({
+      where: { status: 'waiting' },
+    });
+    await this.eventsService.sendGames(games);
   }
 }
