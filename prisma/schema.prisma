@@ -18,7 +18,7 @@ enum GameTurns {
 
 generator client {
   provider = "prisma-client-js"
-  //   output   = "../generated/prisma"
+  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -38,6 +38,16 @@ model User {
   createdGames Game[]   @relation("CreatorRelation")
   whiteGames   Game[]   @relation("WhitePlayer")
   blackGames   Game[]   @relation("BlackPlayer")
+  tokens       Token[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Token {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  refreshToken String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -72,9 +82,9 @@ model Game {
   winnerId      String?    @unique
   creator       User       @relation("CreatorRelation", fields: [creatorId], references: [id])
   creatorId     String
-  whitePlayer   User?       @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+  whitePlayer   User?      @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
   whitePlayerId String?
-  blackPlayer   User  ?     @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+  blackPlayer   User?      @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
   blackPlayerId String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

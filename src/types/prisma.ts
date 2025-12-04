@@ -10,4 +10,12 @@ type RoleRepository = Prisma.RoleDelegate;
 
 type GameRepository = Prisma.GameDelegate;
 
-export type { UserWithRoles, UserRepository, RoleRepository, GameRepository };
+type TokenRepository = Prisma.TokenDelegate;
+
+export type {
+  UserWithRoles,
+  UserRepository,
+  RoleRepository,
+  GameRepository,
+  TokenRepository,
+};

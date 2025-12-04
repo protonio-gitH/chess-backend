@@ -55,6 +55,14 @@ export class UsersService {
     return user;
   }
 
+  public async getUserById(id: string): Promise<UserWithRoles | null> {
+    const user = this.userRepository.findFirst({
+      where: { id },
+      include: { roles: true },
+    });
+    return user;
+  }
+
   public async addRole(dto: AddRoleDto): Promise<AddRoleDto> {
     const user = await this.userRepository.findUnique({
       where: { id: dto.userId },
