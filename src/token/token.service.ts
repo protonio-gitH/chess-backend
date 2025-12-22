@@ -1,7 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AddTokenDto } from './dto/add-token.dto';
-import { TokenRepository, UserWithRoles } from 'src/types/prisma';
-import { GenerateTokenResponse, JwtPayload } from 'src/types/authTypes';
+import type { UserWithRoles } from 'src/users/types';
+import type { TokenRepository } from 'src/token/types';
+import { GenerateTokenResponse, JwtPayload } from 'src/auth/types';
 import { JwtService } from '@nestjs/jwt';
 import { DataBaseService } from 'src/database/database.service';
 import { DeleteTokenDto } from './dto/delete-token-dto';

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user-dto';
 import { AuthService } from './auth.service';
-import { GenerateTokenResponse } from 'src/types/authTypes';
+import type { GenerateTokenResponse } from './types';
 import type { Response, Request } from 'express';
 import { TokenService } from 'src/token/token.service';
 
@@ -26,7 +26,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.login(userDto);
-
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false, // ставить true в проде
@@ -44,7 +43,6 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } =
       await this.authService.registration(userDto);
-
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false, // ставить true в проде
@@ -62,6 +60,7 @@ export class AuthController {
   ): Promise<void> {
     const { refreshToken } = req.cookies;
     res.clearCookie('refreshToken');
+    res.status(204);
     if (refreshToken) await this.tokenService.logout({ refreshToken });
   }
 
@@ -71,13 +70,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const { refreshToken } = req.cookies;
-    const tokens = await this.authService.refresh(refreshToken);
+    const tokens = await this.authService.refresh({ refreshToken });
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: false, // ставить true в проде
       sameSite: 'strict',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
+
     return { accessToken: tokens.accessToken };
   }
 }

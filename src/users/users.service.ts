@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { User, Prisma } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { RolesService } from 'src/roles/roles.service';
-import { UserRepository, UserWithRoles } from 'src/types/prisma';
+import type { UserRepository, UserWithRoles } from './types';
 import { AddRoleDto } from './dto/add-role-dto';
 import { BanDto } from './dto/ban-dto';
 

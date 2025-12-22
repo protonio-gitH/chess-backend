@@ -1,21 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { DataBaseService } from 'src/database/database.service';
-import { GameRepository } from 'src/types/prisma';
+import type { GameRepository } from './types';
 import { CreateGameDto } from './dto/create-game-dto';
 import { Game, Prisma } from '@prisma/client';
 import { AcceptGameDto } from './dto/accept-game-dto';
 import { ConflictException } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
+import { Subject, interval, Subscription, Observable } from 'rxjs';
 
 @Injectable()
-export class GameService {
+export class GameService implements OnModuleInit, OnModuleDestroy {
   private readonly gameRepository: GameRepository;
+  private sub!: Subscription;
 
   constructor(
     private readonly db: DataBaseService,
     private readonly eventsService: EventsService,
   ) {
     this.gameRepository = this.db.game;
+  }
+
+  onModuleInit() {
+    this.sub = interval(3000).subscribe(() => {
+      this.updateGamesList();
+    });
+  }
+
+  onModuleDestroy() {
+    this.sub.unsubscribe();
   }
 
   public async createGame(dto: CreateGameDto): Promise<Game> {
@@ -93,6 +105,6 @@ export class GameService {
     const games = await this.gameRepository.findMany({
       where: { status: 'waiting' },
     });
-    await this.eventsService.sendGames(games);
+    await this.eventsService.sendGames({ games });
   }
 }

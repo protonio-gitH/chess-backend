@@ -5,11 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserWithRoles } from 'src/types/prisma';
+import type { UserWithRoles } from 'src/users/types';
 import { CreateUserDto } from 'src/users/dto/create-user-dto';
 import { UsersService } from 'src/users/users.service';
 import { compare } from 'bcrypt';
-import { GenerateTokenResponse } from 'src/types/authTypes';
+import type { GenerateTokenResponse } from './types';
 import { TokenService } from 'src/token/token.service';
 import { RefreshTokenDto } from 'src/token/dto/refresh-token.dto';
 
@@ -71,6 +71,7 @@ export class AuthService {
     const tokenFromDb = await this.tokenService.fintToken(
       refreshTokenDto.refreshToken,
     );
+
     if (!userData || !tokenFromDb) {
       throw new UnauthorizedException({
         message: 'Пользователь не авторизован',
