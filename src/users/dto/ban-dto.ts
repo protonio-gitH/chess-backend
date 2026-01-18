@@ -1,7 +1,7 @@
-import { IsString, IsNumber, isString } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 
 export class BanDto {
-  @IsString()
+  @IsUUID()
   readonly userId: string;
   @IsString()
   readonly banReason: string;

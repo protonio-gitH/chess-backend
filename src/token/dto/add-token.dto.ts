@@ -1,7 +1,7 @@
-import { IsString, IsJWT } from 'class-validator';
+import { IsUUID, IsJWT } from 'class-validator';
 
 export class AddTokenDto {
-  @IsString()
+  @IsUUID()
   readonly userId: string;
   @IsJWT()
   readonly refreshToken: string;

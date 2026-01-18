@@ -80,10 +80,7 @@ export class UsersService {
       });
       return dto;
     }
-    throw new HttpException(
-      'Пользователь или роль не найдены',
-      HttpStatus.NOT_FOUND,
-    );
+    throw new HttpException('Пользователь или роль не найдены', HttpStatus.NOT_FOUND);
   }
 
   public async ban(dto: BanDto): Promise<BanDto> {

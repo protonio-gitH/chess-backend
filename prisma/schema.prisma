@@ -5,60 +5,60 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 enum GameStatus {
-  waiting
-  in_progress
-  finished
-  abandoned
+    waiting
+    in_progress
+    finished
+    abandoned
 }
 
 enum GameTurns {
-  white
-  black
+    white
+    black
 }
 
 generator client {
-  provider = "prisma-client-js"
-  // output   = "../generated/prisma"
+    provider = "prisma-client-js"
+    // output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  password     String
-  banned       Boolean  @default(false)
-  banReason    String?
-  roles        Role[]   @relation("UserRoles")
-  games        Game[]
-  gamesWon     Game[]   @relation("WinnerRelation")
-  createdGames Game[]   @relation("CreatorRelation")
-  whiteGames   Game[]   @relation("WhitePlayer")
-  blackGames   Game[]   @relation("BlackPlayer")
-  tokens       Token[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+    id           String   @id @default(cuid())
+    email        String   @unique
+    password     String
+    banned       Boolean  @default(false)
+    banReason    String?
+    roles        Role[]   @relation("UserRoles")
+    games        Game[]
+    gamesWon     Game[]   @relation("WinnerRelation")
+    createdGames Game[]   @relation("CreatorRelation")
+    whiteGames   Game[]   @relation("WhitePlayer")
+    blackGames   Game[]   @relation("BlackPlayer")
+    tokens       Token[]
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }
 
 model Token {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  refreshToken String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+    id           String   @id @default(cuid())
+    userId       String
+    user         User     @relation(fields: [userId], references: [id])
+    refreshToken String   @unique
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }
 
 model Role {
-  id          String   @id @default(cuid())
-  value       String   @unique
-  description String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  users       User[]   @relation("UserRoles")
+    id          String   @id @default(cuid())
+    value       String   @unique
+    description String   @unique
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    users       User[]   @relation("UserRoles")
 }
 
 // model Player {
@@ -74,18 +74,18 @@ model Role {
 // }
 
 model Game {
-  id            String     @id @default(cuid())
-  status        GameStatus @default(waiting)
-  turn          GameTurns  @default(white)
-  players       User[]
-  winner        User?      @relation("WinnerRelation", fields: [winnerId], references: [id])
-  winnerId      String?    @unique
-  creator       User       @relation("CreatorRelation", fields: [creatorId], references: [id])
-  creatorId     String
-  whitePlayer   User?      @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
-  whitePlayerId String?
-  blackPlayer   User?      @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
-  blackPlayerId String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+    id            String     @id @default(cuid())
+    status        GameStatus @default(waiting)
+    turn          GameTurns  @default(white)
+    players       User[]
+    winner        User?      @relation("WinnerRelation", fields: [winnerId], references: [id])
+    winnerId      String?    @unique
+    creator       User       @relation("CreatorRelation", fields: [creatorId], references: [id])
+    creatorId     String
+    whitePlayer   User?      @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+    whitePlayerId String?
+    blackPlayer   User?      @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+    blackPlayerId String?
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
 }

@@ -1,1 +1,1 @@
-export type { RoleRepository } from './role-repository';
+export type { RoleRepository } from "./role-repository";

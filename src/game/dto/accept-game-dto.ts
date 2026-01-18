@@ -1,8 +1,8 @@
-import { IsString } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 export class AcceptGameDto {
-  @IsString()
+  @IsUUID()
   readonly gameId: string;
-  @IsString()
+  @IsUUID()
   readonly userId: string;
 }

@@ -1,1 +1,1 @@
-export type { GameRepository } from './game-repository';
+export type { GameRepository } from "./game-repository";

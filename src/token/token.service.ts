@@ -72,7 +72,7 @@ export class TokenService {
     return {
       accessToken: this.jwtService.sign(payload, {
         secret: process.env.PRIVATE_KEY,
-        expiresIn: '5m',
+        expiresIn: '1m',
       }),
       refreshToken: this.jwtService.sign(payload, {
         secret: process.env.REFRESH_KEY,

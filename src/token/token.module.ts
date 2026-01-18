@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { TokenService } from './token.service';
-import { TokenController } from './token.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { DataBaseModule } from 'src/database/database.module';
+import { Module } from "@nestjs/common";
+import { TokenService } from "./token.service";
+import { TokenController } from "./token.controller";
+import { JwtModule } from "@nestjs/jwt";
+import { DataBaseModule } from "src/database/database.module";
 
 @Module({
   controllers: [TokenController],

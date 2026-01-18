@@ -3,9 +3,9 @@ import {
   OnModuleInit,
   OnModuleDestroy,
   MessageEvent,
-} from '@nestjs/common';
-import { Subject, interval, Subscription, Observable } from 'rxjs';
-import { GameEvent } from './types';
+} from "@nestjs/common";
+import { Subject, interval, Subscription, Observable } from "rxjs";
+import { GameEvent } from "./types";
 
 @Injectable()
 export class EventsService implements OnModuleInit, OnModuleDestroy {

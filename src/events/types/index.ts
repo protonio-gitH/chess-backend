@@ -1,1 +1,1 @@
-export type { GameEvent } from './game-event';
+export type { GameEvent } from "./game-event";

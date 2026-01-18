@@ -1,1 +1,1 @@
-export type { TokenRepository } from './token-repository';
+export type { TokenRepository } from "./token-repository";

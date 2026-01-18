@@ -1,12 +1,12 @@
-import { Controller, Delete, Sse } from '@nestjs/common';
-import { EventsService } from './events.service';
+import { Controller, Delete, Sse } from "@nestjs/common";
+import { EventsService } from "./events.service";
 
-@Controller('events')
+@Controller("events")
 export class EventsController {
   constructor(private eventsService: EventsService) {}
 
-  @Sse('games')
-  stream() {
+  @Sse("games")
+  streamGames() {
     return this.eventsService.game$;
   }
 }

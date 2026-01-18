@@ -7,6 +7,7 @@ import { AcceptGameDto } from './dto/accept-game-dto';
 import { ConflictException } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
 import { Subject, interval, Subscription, Observable } from 'rxjs';
+import { GetGameDto } from './dto/get-game-dto';
 
 @Injectable()
 export class GameService implements OnModuleInit, OnModuleDestroy {
@@ -101,10 +102,29 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     return updateGame;
   }
 
-  private async updateGamesList(): Promise<void> {
-    const games = await this.gameRepository.findMany({
-      where: { status: 'waiting' },
+  public async getGame(dto: GetGameDto): Promise<Game | null> {
+    const game = await this.gameRepository.findFirst({
+      where: { id: dto.id },
     });
-    await this.eventsService.sendGames({ games });
+    return game;
+  }
+
+  private async updateGamesList(): Promise<void> {
+    try {
+      const games = await this.gameRepository.findMany({
+        where: { status: 'waiting' },
+        include: {
+          players: {
+            select: { id: true, email: true },
+          },
+          whitePlayer: { select: { id: true, email: true } },
+          blackPlayer: { select: { id: true, email: true } },
+          creator: { select: { id: true, email: true } },
+        },
+      });
+      await this.eventsService.sendGames({ games });
+    } catch (e) {
+      console.error(`updateGamesList error ` + e.message);
+    }
   }
 }

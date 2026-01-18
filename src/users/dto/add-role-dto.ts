@@ -1,7 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsUUID, IsString } from 'class-validator';
 
 export class AddRoleDto {
-  @IsString()
+  @IsUUID()
   readonly userId: string;
   @IsString()
   readonly value: string;
