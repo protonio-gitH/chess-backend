@@ -1,6 +1,6 @@
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateGameDto {
-  @IsUUID()
+  @IsString()
   readonly creatorId: string;
 }
