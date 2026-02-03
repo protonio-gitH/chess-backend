@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, NotFoundException } from '@nestjs/common';
 import { DataBaseService } from 'src/database/database.service';
 import type { GameRepository } from './types';
 import { CreateGameDto } from './dto/create-game-dto';
@@ -102,10 +102,21 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     return updateGame;
   }
 
-  public async getGame(dto: GetGameDto): Promise<Game | null> {
+  public async getGame(dto: GetGameDto): Promise<Game> {
     const game = await this.gameRepository.findFirst({
       where: { id: dto.id },
+      include: {
+        players: {
+          select: { id: true, email: true },
+        },
+        whitePlayer: { select: { id: true, email: true } },
+        blackPlayer: { select: { id: true, email: true } },
+        creator: { select: { id: true, email: true } },
+      },
     });
+    if (!game) {
+      throw new NotFoundException('Game not found');
+    }
     return game;
   }
 

@@ -73,19 +73,30 @@ model Role {
 //   updatedAt DateTime @updatedAt
 // }
 
+model BoardStorage {
+    id        String   @id @default(cuid())
+    gameId    String   @unique
+    game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+    board     Json
+    lastMove  Json?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
 model Game {
-    id            String     @id @default(cuid())
-    status        GameStatus @default(waiting)
-    turn          GameTurns  @default(white)
+    id            String       @id @default(cuid())
+    status        GameStatus   @default(waiting)
+    turn          GameTurns    @default(white)
+    boardStorage  BoardStorage
     players       User[]
-    winner        User?      @relation("WinnerRelation", fields: [winnerId], references: [id])
-    winnerId      String?    @unique
-    creator       User       @relation("CreatorRelation", fields: [creatorId], references: [id])
+    winner        User?        @relation("WinnerRelation", fields: [winnerId], references: [id])
+    winnerId      String?      @unique
+    creator       User         @relation("CreatorRelation", fields: [creatorId], references: [id])
     creatorId     String
-    whitePlayer   User?      @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+    whitePlayer   User?        @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
     whitePlayerId String?
-    blackPlayer   User?      @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+    blackPlayer   User?        @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
     blackPlayerId String?
-    createdAt     DateTime   @default(now())
-    updatedAt     DateTime   @updatedAt
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
 }

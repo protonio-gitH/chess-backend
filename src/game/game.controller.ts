@@ -11,7 +11,7 @@ export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Get('/:id')
-  public async getGame(@Param() dto: GetGameDto): Promise<Game | null> {
+  public async getGame(@Param() dto: GetGameDto): Promise<Game> {
     return this.gameService.getGame(dto);
   }
 
@@ -24,7 +24,6 @@ export class GameController {
   @UseGuards(JwtAuthGuard)
   @Post('/accept')
   public async accept(@Body() dto: AcceptGameDto): Promise<Game> {
-    console.log(dto);
     return this.gameService.acceptGame(dto);
   }
 }
