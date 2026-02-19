@@ -75,28 +75,28 @@ model Role {
 
 model BoardStorage {
     id        String   @id @default(cuid())
-    gameId    String   @unique
-    game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
     board     Json
     lastMove  Json?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    game      Game?
 }
 
 model Game {
-    id            String       @id @default(cuid())
-    status        GameStatus   @default(waiting)
-    turn          GameTurns    @default(white)
-    boardStorage  BoardStorage
-    players       User[]
-    winner        User?        @relation("WinnerRelation", fields: [winnerId], references: [id])
-    winnerId      String?      @unique
-    creator       User         @relation("CreatorRelation", fields: [creatorId], references: [id])
-    creatorId     String
-    whitePlayer   User?        @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
-    whitePlayerId String?
-    blackPlayer   User?        @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
-    blackPlayerId String?
-    createdAt     DateTime     @default(now())
-    updatedAt     DateTime     @updatedAt
+    id             String       @id @default(cuid())
+    status         GameStatus   @default(waiting)
+    turn           GameTurns    @default(white)
+    boardStorageId String       @unique
+    boardStorage   BoardStorage @relation(fields: [boardStorageId], references: [id])
+    players        User[]
+    winner         User?        @relation("WinnerRelation", fields: [winnerId], references: [id])
+    winnerId       String?
+    creator        User         @relation("CreatorRelation", fields: [creatorId], references: [id])
+    creatorId      String
+    whitePlayer    User?        @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+    whitePlayerId  String?
+    blackPlayer    User?        @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+    blackPlayerId  String?
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 }

@@ -60,6 +60,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
           players: {
             connect: { id: user.id },
           },
+          boardStorage: { create: { board: dto.board } },
         },
       });
 
