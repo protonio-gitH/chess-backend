@@ -1,11 +1,7 @@
-import {
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-  MessageEvent,
-} from "@nestjs/common";
-import { Subject, interval, Subscription, Observable } from "rxjs";
-import { GameEvent } from "./types";
+import { Injectable, OnModuleInit, OnModuleDestroy, MessageEvent } from '@nestjs/common';
+import { Subject, interval, Subscription, Observable } from 'rxjs';
+import { GameEvent } from './types';
+import { Game } from '@prisma/client';
 
 @Injectable()
 export class EventsService implements OnModuleInit, OnModuleDestroy {
@@ -26,7 +22,7 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
     // this.sub.unsubscribe();
   }
 
-  sendGames(event: any) {
+  public sendGames(event: GameEvent) {
     this.gamesStream.next({ data: event });
   }
 }

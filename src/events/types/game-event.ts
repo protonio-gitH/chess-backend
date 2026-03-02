@@ -1,3 +1,5 @@
+import { Game } from '@prisma/client';
+
 export interface GameEvent {
-  data: any;
+  games: Game[];
 }

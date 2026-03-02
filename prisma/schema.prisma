@@ -79,7 +79,8 @@ model BoardStorage {
     lastMove  Json?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    game      Game?
+    game      Game     @relation(fields: [gameId], references: [id])
+    gameId    String
 }
 
 model Game {
