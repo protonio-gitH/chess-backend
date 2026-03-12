@@ -7,8 +7,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { DataBaseService } from 'src/database/database.service';
-import { GameRepository } from './types';
-import { BoardStorage } from '@prisma/client';
+import type { GameRepository } from './types';
+import type { BoardStorage } from '@prisma/client';
+import { JoinGameDto } from './dto/join-game-dto';
+import { MoveDto } from './dto/move-dto';
 
 @WebSocketGateway({
   cors: {
@@ -17,7 +19,7 @@ import { BoardStorage } from '@prisma/client';
 })
 export class GameGateway {
   @WebSocketServer()
-  server: Server;
+  private server: Server;
   private readonly gameRepository: GameRepository;
 
   constructor(private readonly db: DataBaseService) {
@@ -34,7 +36,7 @@ export class GameGateway {
 
   @SubscribeMessage('join-game')
   public async handleJoin(
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: JoinGameDto,
     @ConnectedSocket() client: Socket,
   ): Promise<{ data: BoardStorage['board'] | null }> {
     client.join(data.gameId);
@@ -46,8 +48,23 @@ export class GameGateway {
   }
 
   @SubscribeMessage('move')
-  public handleMove(@MessageBody() data: { gameId: string; move: any }) {
+  public async handleMove(
+    @MessageBody()
+    data: MoveDto,
+  ): Promise<void> {
     // логика хода
-    this.server.to(data.gameId).emit('move-made', data.move);
+    const game = await this.gameRepository.findUnique({
+      where: { id: data.gameId },
+    });
+    if (game) {
+      await this.db.boardStorage.update({
+        where: { id: game.boardStorageId },
+        data: {
+          board: data.move.boardDTO,
+          lastMove: data.move.lastMove,
+        },
+      });
+      this.server.to(data.gameId).emit('move-made', data.move);
+    }
   }
 }

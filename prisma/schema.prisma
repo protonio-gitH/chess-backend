@@ -75,12 +75,11 @@ model Role {
 
 model BoardStorage {
     id        String   @id @default(cuid())
-    board     Json
-    lastMove  Json?
+    board     Json     @db.JsonB
+    lastMove  Json?    @db.JsonB
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    game      Game     @relation(fields: [gameId], references: [id])
-    gameId    String
+    game      Game?
 }
 
 model Game {
@@ -88,7 +87,7 @@ model Game {
     status         GameStatus   @default(waiting)
     turn           GameTurns    @default(white)
     boardStorageId String       @unique
-    boardStorage   BoardStorage @relation(fields: [boardStorageId], references: [id])
+    boardStorage   BoardStorage @relation(fields: [boardStorageId], references: [id], onDelete: Cascade)
     players        User[]
     winner         User?        @relation("WinnerRelation", fields: [winnerId], references: [id])
     winnerId       String?

@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, NotFoundException } from '@n
 import { DataBaseService } from 'src/database/database.service';
 import type { GameRepository } from './types';
 import { CreateGameDto } from './dto/create-game-dto';
-import { Game, Prisma } from '@prisma/client';
+import type { Game, Prisma } from '@prisma/client';
 import { AcceptGameDto } from './dto/accept-game-dto';
 import { ConflictException } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
@@ -52,15 +52,19 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     }
 
     const game = await this.db.$transaction(async (tx) => {
+      const boardStorage = await tx.boardStorage.create({
+        data: { board: dto.board },
+      });
+
       const newGame = await tx.game.create({
         data: {
           creatorId: user.id,
           status: 'waiting',
           whitePlayerId: user.id,
+          boardStorageId: boardStorage.id,
           players: {
             connect: { id: user.id },
           },
-          boardStorage: { create: { board: dto.board } },
         },
       });
 
