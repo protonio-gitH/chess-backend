@@ -18,7 +18,6 @@ export class AuthService {
   public async login(userDto: CreateUserDto): Promise<GenerateTokenResponse> {
     const user = await this.validateUser(userDto);
     const { accessToken, refreshToken } = this.tokenService.generateTokens(user);
-
     this.tokenService.addRefreshToken({ userId: user.id, refreshToken });
     return { accessToken, refreshToken };
   }
@@ -61,10 +60,15 @@ export class AuthService {
     }
 
     const user = await this.userService.getUserById(userData.id);
+    if (!user) {
+      throw new UnauthorizedException({
+        message: 'Пользователь не авторизован',
+      });
+    }
 
-    const { accessToken, refreshToken } = this.tokenService.generateTokens(user!);
-    const deleteOldToken = await this.tokenService.logout(refreshTokenDto);
-    await this.tokenService.addRefreshToken({ userId: user!.id, refreshToken });
+    const { accessToken, refreshToken } = this.tokenService.generateTokens(user);
+    await this.tokenService.logout(refreshTokenDto);
+    await this.tokenService.addRefreshToken({ userId: user.id, refreshToken });
     return { accessToken, refreshToken };
   }
 
