@@ -14,7 +14,7 @@ export class TokenService {
   private readonly tokenRepository: TokenRepository;
   constructor(
     private readonly db: DataBaseService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {
     this.tokenRepository = this.db.token;
   }

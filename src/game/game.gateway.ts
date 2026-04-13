@@ -11,10 +11,15 @@ import type { GameRepository } from './types';
 import type { BoardStorage } from '@prisma/client';
 import { JoinGameDto } from './dto/join-game-dto';
 import { MoveDto } from './dto/move-dto';
+import { JwtService } from '@nestjs/jwt';
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: true,
   },
 })
 export class GameGateway {
@@ -22,12 +27,26 @@ export class GameGateway {
   private server: Server;
   private readonly gameRepository: GameRepository;
 
-  constructor(private readonly db: DataBaseService) {
+  constructor(
+    private readonly db: DataBaseService,
+    private readonly jwtService: JwtService,
+  ) {
     this.gameRepository = this.db.game;
   }
 
   public handleConnection(client: Socket) {
-    console.log('Client connected', client.id);
+    try {
+      console.log('Client connected', client.id);
+      const token = client.handshake.auth.token;
+      if (token) {
+        const userData = this.jwtService.verify(token, {
+          secret: process.env.PRIVATE_KEY,
+        });
+        console.log('User data:', userData);
+      }
+    } catch (error: unknown) {
+      console.error('Error during connection:', getErrorMessage(error));
+    }
   }
 
   public handleDisconnect(client: Socket) {
@@ -51,11 +70,14 @@ export class GameGateway {
   public async handleMove(
     @MessageBody()
     data: MoveDto,
+    @ConnectedSocket() client: Socket,
   ): Promise<void> {
     // логика хода
+    // перед ходом делать рефреш с фронта
     const game = await this.gameRepository.findUnique({
       where: { id: data.gameId },
     });
+    console.log(client);
     if (game) {
       await this.db.boardStorage.update({
         where: { id: game.boardStorageId },
