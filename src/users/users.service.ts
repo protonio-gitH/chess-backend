@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { User, Prisma } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { RolesService } from 'src/roles/roles.service';
-import type { UserRepository, UserWithRoles } from './types';
+import type { UserRepository, UserWithRoles, UserWithGames } from './types';
 import { AddRoleDto } from './dto/add-role-dto';
 import { BanDto } from './dto/ban-dto';
 
@@ -58,7 +58,30 @@ export class UsersService {
   public async getUserById(id: string): Promise<UserWithRoles | null> {
     const user = this.userRepository.findFirst({
       where: { id },
-      include: { roles: true },
+      include: {
+        roles: true,
+      },
+    });
+    return user;
+  }
+
+  public async getUserByIdWithGames(id: string): Promise<UserWithGames | null> {
+    const user = this.userRepository.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        banned: true,
+        banReason: true,
+        createdAt: true,
+        updatedAt: true,
+        roles: true,
+        games: true,
+        gamesWon: true,
+        createdGames: true,
+        whiteGames: true,
+        blackGames: true,
+      },
     });
     return user;
   }

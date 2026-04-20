@@ -37,13 +37,14 @@ export class GameGateway {
   public handleConnection(client: Socket) {
     try {
       console.log('Client connected', client.id);
-      const token = client.handshake.auth.token;
-      if (token) {
-        const userData = this.jwtService.verify(token, {
-          secret: process.env.PRIVATE_KEY,
-        });
-        console.log('User data:', userData);
-      }
+      //   const token = client.handshake.auth.token;
+      //   if (token) {
+      //     const userData = this.jwtService.verify(token, {
+      //       secret: process.env.PRIVATE_KEY,
+      //     });
+      //     client.data.user = userData;
+      //     // console.log('User data:', userData);
+      //   }
     } catch (error: unknown) {
       console.error('Error during connection:', getErrorMessage(error));
     }
@@ -73,11 +74,9 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     // логика хода
-    // перед ходом делать рефреш с фронта
     const game = await this.gameRepository.findUnique({
       where: { id: data.gameId },
     });
-    console.log(client);
     if (game) {
       await this.db.boardStorage.update({
         where: { id: game.boardStorageId },
