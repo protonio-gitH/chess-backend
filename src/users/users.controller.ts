@@ -19,8 +19,7 @@ export class UsersController {
     return await this.usersService.createUser(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Post('profile')
   public async getProfile(@Body() dto: GetProfileDto): Promise<UserWithGames | null> {
     return await this.usersService.getUserByIdWithGames(dto.userId);
   }
