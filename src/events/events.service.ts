@@ -5,11 +5,16 @@ import { Game } from '@prisma/client';
 
 @Injectable()
 export class EventsService implements OnModuleInit, OnModuleDestroy {
-  private gamesStream = new Subject<any>();
+  private gamesStream = new Subject<{ data: GameEvent }>();
+  private timerStream = new Subject<any>();
   private sub!: Subscription;
 
-  get game$(): Observable<GameEvent> {
+  get game$(): Observable<{ data: GameEvent }> {
     return this.gamesStream.asObservable();
+  }
+
+  get timer$(): Observable<any> {
+    return this.timerStream.asObservable();
   }
 
   onModuleInit() {
@@ -24,5 +29,9 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
 
   public sendGames(event: GameEvent) {
     this.gamesStream.next({ data: event });
+  }
+
+  public sendTimer(event: any) {
+    this.timerStream.next({ data: event });
   }
 }

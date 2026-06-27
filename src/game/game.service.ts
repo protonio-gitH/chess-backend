@@ -140,7 +140,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
       });
       await this.eventsService.sendGames({ games });
     } catch (e) {
-      console.error(`updateGamesList error ` + e.message);
+      console.error(`updateGamesList error ` + e);
     }
   }
 }

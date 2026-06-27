@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "public"."Game" ADD COLUMN     "blackTimer" INTEGER NOT NULL DEFAULT 300000,
+ADD COLUMN     "whiteTimer" INTEGER NOT NULL DEFAULT 300000;

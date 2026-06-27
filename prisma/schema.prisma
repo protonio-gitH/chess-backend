@@ -97,6 +97,9 @@ model Game {
     whitePlayerId  String?
     blackPlayer    User?        @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
     blackPlayerId  String?
+    blackTimer     Int          @default(300000) // 5 minutes in seconds
+    whiteTimer     Int          @default(300000) // 5 minutes in seconds
+    lastMoveTime   DateTime? 	// Time of the last move, used for timer calculations
     createdAt      DateTime     @default(now())
     updatedAt      DateTime     @updatedAt
 }

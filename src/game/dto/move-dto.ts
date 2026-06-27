@@ -8,5 +8,8 @@ export class MoveDto {
   readonly move: {
     boardDTO: Prisma.InputJsonValue;
     lastMove: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+    whiteTimer: number;
+    blackTimer: number;
+    lastMoveTime: Date;
   };
 }
