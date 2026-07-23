@@ -183,7 +183,7 @@ export class GameGateway {
             lastMove: data.move.lastMove,
           },
         });
-        await tx.game.update({
+        return await tx.game.update({
           where: { id: data.gameId },
           data: {
             lastMoveTime: new Date(),
@@ -193,9 +193,9 @@ export class GameGateway {
           },
         });
       });
-      const game2 = await this.gameRepository.findUnique({
-        where: { id: data.gameId },
-      });
+      //   const game2 = await this.gameRepository.findUnique({
+      //     where: { id: data.gameId },
+      //   });
       //   console.log(
       //     'White timer:',
       //     game2!.whiteTimer / 1000 / 60,
@@ -205,14 +205,14 @@ export class GameGateway {
       //   data.move.whiteTimer = game2!.whiteTimer;
       //   data.move.blackTimer = game2!.blackTimer;
       if (
-        game2?.status === GameStatus.in_progress &&
-        game2.lastMoveTime &&
-        !!game2.whiteTimer &&
-        !!game2.blackTimer
+        updatedGame?.status === GameStatus.in_progress &&
+        updatedGame.lastMoveTime &&
+        !!updatedGame.whiteTimer &&
+        !!updatedGame.blackTimer
       ) {
-        data.move.whiteTimer = game2.whiteTimer;
-        data.move.blackTimer = game2.blackTimer;
-        data.move.lastMoveTime = game2.lastMoveTime;
+        data.move.whiteTimer = updatedGame.whiteTimer;
+        data.move.blackTimer = updatedGame.blackTimer;
+        data.move.lastMoveTime = updatedGame.lastMoveTime;
         this.server.to(data.gameId).emit('move-made', data.move);
       }
     }
