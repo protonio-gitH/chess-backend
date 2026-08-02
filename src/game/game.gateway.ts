@@ -51,44 +51,44 @@ export class GameGateway {
       console.error('Error during connection:', getErrorMessage(error));
     }
   }
-  // Как вариант сделать отсчет на фронте, где он будет отсчитывать от даты последнего хода
-  private startTimerBroadcast(gameId: string) {
-    if (this.timerIntervals.has(gameId)) return;
-    const interval = setInterval(async () => {
-      const game = await this.gameRepository.findUnique({
-        where: { id: gameId },
-      });
-      if (game && game.status === GameStatus.in_progress) {
-        const updatedGame = await this.gameRepository.update({
-          where: { id: gameId },
-          data: {
-            [game.turn === GameTurns.white ? 'whiteTimer' : 'blackTimer']:
-              game.turn === GameTurns.white ? game.whiteTimer - 1000 : game.blackTimer - 1000,
-          },
-        });
+  //   // Как вариант сделать отсчет на фронте, где он будет отсчитывать от даты последнего хода
+  //   private startTimerBroadcast(gameId: string) {
+  //     if (this.timerIntervals.has(gameId)) return;
+  //     const interval = setInterval(async () => {
+  //       const game = await this.gameRepository.findUnique({
+  //         where: { id: gameId },
+  //       });
+  //       if (game && game.status === GameStatus.in_progress) {
+  //         const updatedGame = await this.gameRepository.update({
+  //           where: { id: gameId },
+  //           data: {
+  //             [game.turn === GameTurns.white ? 'whiteTimer' : 'blackTimer']:
+  //               game.turn === GameTurns.white ? game.whiteTimer - 1000 : game.blackTimer - 1000,
+  //           },
+  //         });
 
-        if (updatedGame.whiteTimer <= 0 || updatedGame.blackTimer <= 0) {
-          this.stopTimerBroadcast(gameId);
-        } else {
-          this.server.to(gameId).emit('timer-update', {
-            whiteTimer: updatedGame.whiteTimer,
-            blackTimer: updatedGame.blackTimer,
-          });
-        }
-      } else if (game && game.status === GameStatus.finished) {
-        this.stopTimerBroadcast(gameId);
-      }
-    }, 1000);
-    this.timerIntervals.set(gameId, interval);
-  }
+  //         if (updatedGame.whiteTimer <= 0 || updatedGame.blackTimer <= 0) {
+  //           this.stopTimerBroadcast(gameId);
+  //         } else {
+  //           this.server.to(gameId).emit('timer-update', {
+  //             whiteTimer: updatedGame.whiteTimer,
+  //             blackTimer: updatedGame.blackTimer,
+  //           });
+  //         }
+  //       } else if (game && game.status === GameStatus.finished) {
+  //         this.stopTimerBroadcast(gameId);
+  //       }
+  //     }, 1000);
+  //     this.timerIntervals.set(gameId, interval);
+  //   }
 
-  private stopTimerBroadcast(gameId: string) {
-    const interval = this.timerIntervals.get(gameId);
-    if (interval) {
-      clearInterval(interval);
-      this.timerIntervals.delete(gameId);
-    }
-  }
+  //   private stopTimerBroadcast(gameId: string) {
+  //     const interval = this.timerIntervals.get(gameId);
+  //     if (interval) {
+  //       clearInterval(interval);
+  //       this.timerIntervals.delete(gameId);
+  //     }
+  //   }
 
   public handleDisconnect(client: Socket) {
     console.log('Client disconnected', client.id);
@@ -134,22 +134,22 @@ export class GameGateway {
     return { data: sendData };
   }
 
-  @SubscribeMessage('get-timers')
-  public async handleGetTimers(
-    @MessageBody() data: { gameId: string },
-    @ConnectedSocket() client: Socket,
-  ): Promise<{ whiteTimer: number; blackTimer: number }> {
-    const game = await this.gameRepository.findUnique({
-      where: { id: data.gameId },
-    });
-    if (!game) {
-      throw new Error('Game not found');
-    }
-    return {
-      whiteTimer: game.whiteTimer,
-      blackTimer: game.blackTimer,
-    };
-  }
+  //   @SubscribeMessage('get-timers')
+  //   public async handleGetTimers(
+  //     @MessageBody() data: { gameId: string },
+  //     @ConnectedSocket() client: Socket,
+  //   ): Promise<{ whiteTimer: number; blackTimer: number }> {
+  //     const game = await this.gameRepository.findUnique({
+  //       where: { id: data.gameId },
+  //     });
+  //     if (!game) {
+  //       throw new Error('Game not found');
+  //     }
+  //     return {
+  //       whiteTimer: game.whiteTimer,
+  //       blackTimer: game.blackTimer,
+  //     };
+  //   }
 
   @SubscribeMessage('move')
   public async handleMove(
@@ -174,6 +174,12 @@ export class GameGateway {
       //       lastMove: data.move.lastMove,
       //     },
       //   });
+      const winnerId =
+        game.whiteTimer - elapsed <= 0
+          ? game.blackPlayerId
+          : game.blackTimer - elapsed <= 0
+            ? game.whitePlayerId
+            : null;
 
       const updatedGame = await this.db.$transaction(async (tx) => {
         await tx.boardStorage.update({
@@ -190,6 +196,11 @@ export class GameGateway {
             [game.turn === GameTurns.white ? 'whiteTimer' : 'blackTimer']:
               game.turn === GameTurns.white ? game.whiteTimer - elapsed : game.blackTimer - elapsed,
             turn: game.turn === GameTurns.white ? GameTurns.black : GameTurns.white,
+            status:
+              game.whiteTimer - elapsed <= 0 || game.blackTimer - elapsed <= 0
+                ? GameStatus.finished
+                : game.status,
+            winnerId,
           },
         });
       });
@@ -205,10 +216,9 @@ export class GameGateway {
       //   data.move.whiteTimer = game2!.whiteTimer;
       //   data.move.blackTimer = game2!.blackTimer;
       if (
-        updatedGame?.status === GameStatus.in_progress &&
         updatedGame.lastMoveTime &&
-        !!updatedGame.whiteTimer &&
-        !!updatedGame.blackTimer
+        updatedGame.whiteTimer > 0 &&
+        updatedGame.blackTimer > 0
       ) {
         data.move.whiteTimer = updatedGame.whiteTimer;
         data.move.blackTimer = updatedGame.blackTimer;
