@@ -36,6 +36,27 @@ export class GameGateway {
     this.gameRepository = this.db.game;
   }
 
+  private computeElapsedAndTimers(game: any) {
+    const now = Date.now();
+    const elapsed = game.lastMoveTime ? now - game.lastMoveTime.getTime() : 0;
+
+    const activeTimerAfter =
+      game.turn === GameTurns.white ? game.whiteTimer - elapsed : game.blackTimer - elapsed;
+    const clampedActiveTimerAfter = Math.max(0, activeTimerAfter);
+
+    const whiteTimerAfter =
+      game.turn === GameTurns.white ? clampedActiveTimerAfter : Math.max(0, game.whiteTimer);
+    const blackTimerAfter =
+      game.turn === GameTurns.white ? Math.max(0, game.blackTimer) : clampedActiveTimerAfter;
+
+    const winnerId =
+      whiteTimerAfter <= 0 ? game.blackPlayerId : blackTimerAfter <= 0 ? game.whitePlayerId : null;
+
+    const finished = whiteTimerAfter <= 0 || blackTimerAfter <= 0;
+
+    return { elapsed, winnerId, whiteTimerAfter, blackTimerAfter, finished };
+  }
+
   public handleConnection(client: Socket) {
     try {
       console.log('Client connected', client.id);
@@ -151,6 +172,33 @@ export class GameGateway {
   //     };
   //   }
 
+  @SubscribeMessage('update-game-status')
+  public async handleUpdateGameStatus(@MessageBody() data: { gameId: string }): Promise<void> {
+    const game = await this.gameRepository.findUnique({
+      where: { id: data.gameId },
+    });
+
+    if (game) {
+      const { elapsed, winnerId, whiteTimerAfter, blackTimerAfter, finished } =
+        this.computeElapsedAndTimers(game);
+
+      if (finished || winnerId) {
+        const updated = await this.gameRepository.update({
+          where: { id: data.gameId },
+          data: {
+            whiteTimer: whiteTimerAfter,
+            blackTimer: blackTimerAfter,
+            status: finished ? GameStatus.finished : game.status,
+            winnerId,
+          },
+        });
+        this.server.to(data.gameId).emit('timer-update', {
+          status: updated.status,
+        });
+      }
+    }
+  }
+
   @SubscribeMessage('move')
   public async handleMove(
     @MessageBody()
@@ -162,64 +210,36 @@ export class GameGateway {
       where: { id: data.gameId },
     });
     if (game) {
-      const now = Date.now();
-      let elapsed = 0;
-      if (game.lastMoveTime) {
-        elapsed = now - game.lastMoveTime.getTime();
-      }
-      //   await this.db.boardStorage.update({
-      //     where: { id: game.boardStorageId },
-      //     data: {
-      //       board: data.move.boardDTO,
-      //       lastMove: data.move.lastMove,
-      //     },
-      //   });
-      const winnerId =
-        game.whiteTimer - elapsed <= 0
-          ? game.blackPlayerId
-          : game.blackTimer - elapsed <= 0
-            ? game.whitePlayerId
-            : null;
+      const { elapsed, winnerId, whiteTimerAfter, blackTimerAfter, finished } =
+        this.computeElapsedAndTimers(game);
 
       const updatedGame = await this.db.$transaction(async (tx) => {
-        await tx.boardStorage.update({
-          where: { id: game.boardStorageId },
-          data: {
-            board: data.move.boardDTO,
-            lastMove: data.move.lastMove,
-          },
-        });
+        if (!finished) {
+          await tx.boardStorage.update({
+            where: { id: game.boardStorageId },
+            data: {
+              board: data.move.boardDTO,
+              lastMove: data.move.lastMove,
+            },
+          });
+        }
         return await tx.game.update({
           where: { id: data.gameId },
           data: {
             lastMoveTime: new Date(),
-            [game.turn === GameTurns.white ? 'whiteTimer' : 'blackTimer']:
-              game.turn === GameTurns.white ? game.whiteTimer - elapsed : game.blackTimer - elapsed,
+            whiteTimer: whiteTimerAfter,
+            blackTimer: blackTimerAfter,
             turn: game.turn === GameTurns.white ? GameTurns.black : GameTurns.white,
-            status:
-              game.whiteTimer - elapsed <= 0 || game.blackTimer - elapsed <= 0
-                ? GameStatus.finished
-                : game.status,
+            status: finished ? GameStatus.finished : game.status,
             winnerId,
           },
         });
       });
-      //   const game2 = await this.gameRepository.findUnique({
-      //     where: { id: data.gameId },
-      //   });
-      //   console.log(
-      //     'White timer:',
-      //     game2!.whiteTimer / 1000 / 60,
-      //     'Black timer:',
-      //     game2!.blackTimer / 1000 / 60,
-      //   );
-      //   data.move.whiteTimer = game2!.whiteTimer;
-      //   data.move.blackTimer = game2!.blackTimer;
-      if (
-        updatedGame.lastMoveTime &&
-        updatedGame.whiteTimer > 0 &&
-        updatedGame.blackTimer > 0
-      ) {
+
+      if (finished || winnerId) {
+      }
+
+      if (updatedGame.lastMoveTime && updatedGame.whiteTimer > 0 && updatedGame.blackTimer > 0) {
         data.move.whiteTimer = updatedGame.whiteTimer;
         data.move.blackTimer = updatedGame.blackTimer;
         data.move.lastMoveTime = updatedGame.lastMoveTime;

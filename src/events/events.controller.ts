@@ -9,9 +9,4 @@ export class EventsController {
   public streamGames() {
     return this.eventsService.game$;
   }
-
-  @Sse('timer')
-  public streamTimer() {
-    return this.eventsService.timer$;
-  }
 }

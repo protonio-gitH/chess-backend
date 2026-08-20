@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { GameService } from './game.service';
 import { CreateGameDto } from './dto/create-game-dto';
 import { Game, Prisma } from '@prisma/client';
@@ -23,6 +32,7 @@ export class GameController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/accept')
+  @HttpCode(HttpStatus.OK)
   public async accept(@Body() dto: AcceptGameDto): Promise<Game> {
     return this.gameService.acceptGame(dto);
   }

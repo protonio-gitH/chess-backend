@@ -108,7 +108,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
   }
 
   public async getGame(dto: GetGameDto): Promise<Game> {
-    const game = await this.gameRepository.findFirst({
+    let game = await this.gameRepository.findFirst({
       where: { id: dto.id },
       include: {
         players: {
@@ -121,6 +121,20 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     });
     if (!game) {
       throw new NotFoundException('Game not found');
+    }
+    if (game.status === 'in_progress' && (game.whiteTimer <= 0 || game.blackTimer <= 0)) {
+      game = await this.gameRepository.update({
+        where: { id: game.id },
+        data: { status: 'finished' },
+        include: {
+          players: {
+            select: { id: true, email: true },
+          },
+          whitePlayer: { select: { id: true, email: true } },
+          blackPlayer: { select: { id: true, email: true } },
+          creator: { select: { id: true, email: true } },
+        },
+      });
     }
     return game;
   }
