@@ -8,6 +8,7 @@ import { ConflictException } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
 import { Subject, interval, Subscription, Observable } from 'rxjs';
 import { GetGameDto } from './dto/get-game-dto';
+import { GameGateway } from './game.gateway';
 
 @Injectable()
 export class GameService implements OnModuleInit, OnModuleDestroy {
@@ -17,6 +18,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly db: DataBaseService,
     private readonly eventsService: EventsService,
+    private readonly gameGateway: GameGateway,
   ) {
     this.gameRepository = this.db.game;
   }
@@ -103,7 +105,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
 
       return game;
     });
-
+    this.gameGateway.sendGameAfterAccept(updateGame.id, updateGame);
     return updateGame;
   }
 

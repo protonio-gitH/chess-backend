@@ -8,7 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { DataBaseService } from 'src/database/database.service';
 import type { GameRepository } from './types';
-import type { BoardStorage } from '@prisma/client';
+import type { BoardStorage, Game } from '@prisma/client';
 import { JoinGameDto } from './dto/join-game-dto';
 import { MoveDto } from './dto/move-dto';
 import { JwtService } from '@nestjs/jwt';
@@ -27,7 +27,6 @@ export class GameGateway {
   @WebSocketServer()
   private server: Server;
   private readonly gameRepository: GameRepository;
-  private timerIntervals = new Map<string, NodeJS.Timeout>();
 
   constructor(
     private readonly db: DataBaseService,
@@ -36,7 +35,7 @@ export class GameGateway {
     this.gameRepository = this.db.game;
   }
 
-  private computeElapsedAndTimers(game: any) {
+  private computeElapsedAndTimers(game: Game) {
     const now = Date.now();
     const elapsed = game.lastMoveTime ? now - game.lastMoveTime.getTime() : 0;
 
@@ -72,47 +71,13 @@ export class GameGateway {
       console.error('Error during connection:', getErrorMessage(error));
     }
   }
-  //   // Как вариант сделать отсчет на фронте, где он будет отсчитывать от даты последнего хода
-  //   private startTimerBroadcast(gameId: string) {
-  //     if (this.timerIntervals.has(gameId)) return;
-  //     const interval = setInterval(async () => {
-  //       const game = await this.gameRepository.findUnique({
-  //         where: { id: gameId },
-  //       });
-  //       if (game && game.status === GameStatus.in_progress) {
-  //         const updatedGame = await this.gameRepository.update({
-  //           where: { id: gameId },
-  //           data: {
-  //             [game.turn === GameTurns.white ? 'whiteTimer' : 'blackTimer']:
-  //               game.turn === GameTurns.white ? game.whiteTimer - 1000 : game.blackTimer - 1000,
-  //           },
-  //         });
-
-  //         if (updatedGame.whiteTimer <= 0 || updatedGame.blackTimer <= 0) {
-  //           this.stopTimerBroadcast(gameId);
-  //         } else {
-  //           this.server.to(gameId).emit('timer-update', {
-  //             whiteTimer: updatedGame.whiteTimer,
-  //             blackTimer: updatedGame.blackTimer,
-  //           });
-  //         }
-  //       } else if (game && game.status === GameStatus.finished) {
-  //         this.stopTimerBroadcast(gameId);
-  //       }
-  //     }, 1000);
-  //     this.timerIntervals.set(gameId, interval);
-  //   }
-
-  //   private stopTimerBroadcast(gameId: string) {
-  //     const interval = this.timerIntervals.get(gameId);
-  //     if (interval) {
-  //       clearInterval(interval);
-  //       this.timerIntervals.delete(gameId);
-  //     }
-  //   }
 
   public handleDisconnect(client: Socket) {
     console.log('Client disconnected', client.id);
+  }
+
+  public sendGameAfterAccept(gameId: string, gameData: Game): void {
+    this.server.to(gameId).emit('game-accepted', gameData);
   }
 
   @SubscribeMessage('join-game')
@@ -132,14 +97,7 @@ export class GameGateway {
       where: { id: data.gameId },
       include: { boardStorage: {} },
     });
-    //   console.log(
-    //     'White timer:',
-    //     game2!.whiteTimer / 1000 / 60,
-    //     'Black timer:',
-    //     game2!.blackTimer / 1000 / 60,
-    //   );
-    //   data.move.whiteTimer = game2!.whiteTimer;
-    //   data.move.blackTimer = game2!.blackTimer;
+
     const sendData: {
       board: BoardStorage['board'] | null;
       whiteTimer: number;
@@ -154,23 +112,6 @@ export class GameGateway {
 
     return { data: sendData };
   }
-
-  //   @SubscribeMessage('get-timers')
-  //   public async handleGetTimers(
-  //     @MessageBody() data: { gameId: string },
-  //     @ConnectedSocket() client: Socket,
-  //   ): Promise<{ whiteTimer: number; blackTimer: number }> {
-  //     const game = await this.gameRepository.findUnique({
-  //       where: { id: data.gameId },
-  //     });
-  //     if (!game) {
-  //       throw new Error('Game not found');
-  //     }
-  //     return {
-  //       whiteTimer: game.whiteTimer,
-  //       blackTimer: game.blackTimer,
-  //     };
-  //   }
 
   @SubscribeMessage('update-game-status')
   public async handleUpdateGameStatus(@MessageBody() data: { gameId: string }): Promise<void> {

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { GameService } from './game.service';
@@ -33,7 +34,8 @@ export class GameController {
   @UseGuards(JwtAuthGuard)
   @Post('/accept')
   @HttpCode(HttpStatus.OK)
-  public async accept(@Body() dto: AcceptGameDto): Promise<Game> {
+  public async accept(@Body() dto: AcceptGameDto, @Req() request: Request): Promise<Game> {
+    // const userId = request?.user?.id;
     return this.gameService.acceptGame(dto);
   }
 }
